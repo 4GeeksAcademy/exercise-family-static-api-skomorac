@@ -18,21 +18,18 @@ jackson_family = FamilyStructure("Jackson")
 # Add the initial family members
 jackson_family.add_member({
     'first_name': 'John',
-    'last_name': 'Jackson',
     'age': 33,
     'lucky_numbers': [7, 13, 22]
 })
 
 jackson_family.add_member({
     'first_name': 'Jane',
-    'last_name': 'Jackson',
     'age': 35,
     'lucky_numbers': [10, 14, 3]
 })
 
 jackson_family.add_member({
     'first_name': 'Jimmy',
-    'last_name': 'Jackson',
     'age': 5,
     'lucky_numbers': [1]
 })
@@ -58,7 +55,7 @@ def handle_hello():
 def get_member(id):
     member = jackson_family.get_member(id)
     if member is None:
-        return jsonify({"error" : "Memeber not found"}), 404
+        return jsonify({"error" : "Member not found"}), 404
     else:
         return jsonify(member), 200
 
@@ -74,7 +71,7 @@ def delete_member(id):
 
 @app.route('/member', methods=['POST'])
 def add_new_member():
-    data = request.json  # Assuming the client sends JSON data
+    data = request.json  
 
     # Check if all required fields are present in the request
     required_fields = ['first_name', 'age', 'lucky_numbers']
@@ -82,15 +79,20 @@ def add_new_member():
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400
         
-    if 'id' not in data:
-        data['id'] = jackson_family._generateId
+    # Check if 'id' is provided in the request
+    if 'id' in data:
+        new_member_id = data['id']
+    else:
+        # Generate a new random ID
+        new_member_id = jackson_family._generateId()
 
     # Call the add_member method to add the new member
+    data['id'] = new_member_id  # Assign the ID to the data
     new_member = jackson_family.add_member(data)
     if new_member is None:
         return jsonify({"error": "Failed to add member"}), 500  # Server error
     else:
-        return jsonify({"done" : True}), 200  # Successfully added, return the new member with status code 201
+        return jsonify({"done" : True, "id": new_member_id}), 200  # Successfully added, return the new member with status code 201
 
 
 # this only runs if `$ python src/app.py` is executed
